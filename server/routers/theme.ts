@@ -3,7 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   buildThemeZip,
-  buildThemeZipImageOnly,
   convertAudioToOgg,
   convertImageToBackground,
   THEME_FOLDER_NAME,
@@ -21,8 +20,8 @@ export const themeRouter = router({
    * يرفع المستخدم صورة وصوت (base64) ويعيد:
    * - معاينة الصورة بعد التحويل (base64 jpg)
    * - رابط تحميل حزمة ZIP الكاملة
-   * كما يمكن رفع الصورة فقط (audioData اختياري) ويُبني ZIP كامل بثيم GameStation
-   * مع الخلفية الجديدة فقط (يبقى bgm.ogg الأصلي دون مساس)
+   * كما يمكن رفع الصورة فقط (audioData اختياري) ويُبني ZIP كامل من الثيم المرجعي
+   * (بدون خلفية وصوت) مع إضافة الخلفية الجديدة والصوت إن وُجد
    */
   build: publicProcedure
     .input(fileUploadSchema.extend({ audioData: z.string().max(MAX_UPLOAD_B64_BYTES).optional() }))
@@ -31,15 +30,14 @@ export const themeRouter = router({
         const imageBytes = Buffer.from(input.data, "base64");
         const { jpgBytes } = await convertImageToBackground(imageBytes);
 
-        // إذا لم يرفع المستخدم صوتاً نحتفظ بـ bgm.ogg الأصلي من الثيم دون مساس
-        let result;
+        // الثيم المرجعي نظيف (بدون خلفية وصوت): الخلفية تُضاف دائماً والصوت إن وُجد
+        let oggBytes: Buffer | null = null;
         if (input.audioData && input.audioData.length > 0) {
           const audioBytes = Buffer.from(input.audioData, "base64");
-          const { oggBytes } = await convertAudioToOgg(audioBytes, input.fileName);
-          result = await buildThemeZip(jpgBytes, oggBytes);
-        } else {
-          result = await buildThemeZipImageOnly(jpgBytes);
+          const res = await convertAudioToOgg(audioBytes, input.fileName);
+          oggBytes = res.oggBytes;
         }
+        const result = await buildThemeZip(jpgBytes, oggBytes);
 
         // تخزين الملف في ذاكرة الخادم المؤقتة للتحميل المضمون (same-origin)
         // ورفعه إلى التخزين البعيد كسجل — التحميل يُخدم من الذاكرة مباشرة
@@ -47,7 +45,7 @@ export const themeRouter = router({
         const { putDownloadCache } = await import("../_core/storageProxy");
         const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 60) || "theme";
         const fileKey = `themes/${Date.now()}-${safeName}-${THEME_FOLDER_NAME}.zip`;
-        await putDownloadCache(fileKey, result.zipBytes, "application/zip");
+        putDownloadCache(fileKey, result.zipBytes, "application/zip");
         storagePut(fileKey, result.zipBytes, "application/zip").catch(err => {
           console.error("[Theme] remote backup failed (download still works):", err?.message);
         });
@@ -76,7 +74,7 @@ export const themeRouter = router({
         const { storagePut } = await import("../storage");
         const { putDownloadCache } = await import("../_core/storageProxy");
         const fileKey = `backgrounds/${Date.now()}-background.jpg`;
-        await putDownloadCache(fileKey, jpgBytes, "image/jpeg");
+        putDownloadCache(fileKey, jpgBytes, "image/jpeg");
         storagePut(fileKey, jpgBytes, "image/jpeg").catch(err => {
           console.error("[Theme] remote backup failed (download still works):", err?.message);
         });

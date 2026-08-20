@@ -5,6 +5,7 @@
  * 3. توليد ZIP بكامل ملفات الثيم الأصلي مع استبدال background.jpg و sound/bgm.ogg فقط
  */
 import { execFile } from "node:child_process";
+import path from "node:path";
 import { createHash } from "node:crypto";
 import { promisify } from "node:util";
 import JSZip from "jszip";
@@ -17,7 +18,7 @@ export const THEME_BG_HEIGHT = 336;
 export const THEME_FOLDER_NAME = "GameStation_thm_ps2";
 
 /** مسارات أصول الثيم المرجعية */
-const BASE_THEME_ZIP_PATH = "/home/ubuntu/webdev-static-assets/GameStation_thm_ps2_base.zip";
+const BASE_THEME_ZIP_PATH = path.resolve(process.cwd(), "assets", "GameStation_thm_ps2_base.zip");
 
 /** شعار GameStation للعلامة المائية: يسار الأسفل (GS أبيض) ويمين الأسفل (شعار GameStation الأصلي) */
 const GS_WATERMARK_LOGO_PATH = "/home/ubuntu/webdev-static-assets/gs-watermark-white.png";
@@ -135,8 +136,8 @@ export async function convertAudioToOgg(audioBytes: Buffer, sourceName: string):
   }
 }
 
-/** توليد حزمة ZIP بكامل ملفات الثيم الأصلي مع استبدال الخلفية فقط (يبقى bgm.ogg الأصلي) */
-export async function buildThemeZipImageOnly(jpgBytes: Buffer): Promise<BuildResult> {
+/** توليد حزمة ZIP من الثيم المرجعي (بدون خلفية وصوت) مع إضافة الخلفية والصوت الجديد */
+export async function buildThemeZip(jpgBytes: Buffer, oggBytes: Buffer | null = null): Promise<BuildResult> {
   const baseZip = await import("node:fs").then(fs => fs.readFileSync(BASE_THEME_ZIP_PATH));
   const baseZipObj = new JSZip();
   await baseZipObj.loadAsync(baseZip);
@@ -148,52 +149,23 @@ export async function buildThemeZipImageOnly(jpgBytes: Buffer): Promise<BuildRes
       zip.folder(relPath);
       continue;
     }
-    if (relPath === "background.jpg") {
-      zip.file(relPath, jpgBytes);
-    } else if (relPath === "sound/bgm.ogg") {
-      // المستخدم لم يرفع صوتاً: نحذف ملف الصوت الأصلي من الحزمة
-      continue;
-    } else {
-      const content = await file.async("nodebuffer");
-      zip.file(relPath, content);
-    }
+    // الحزمة المرجعية نظيفة (بدون background.jpg و sound/bgm.ogg)
+    if (relPath.endsWith("background.jpg") || relPath.endsWith("sound/bgm.ogg")) continue;
+    const content = await file.async("nodebuffer");
+    zip.file(relPath, content);
+  }
+
+  // إضافة الخلفية الجديدة بالاسم والصيغة والحجم القياسي للثيم (نفس مسار الثيم الأصلي)
+  zip.file("GameStation_thm_ps2/background.jpg", jpgBytes);
+
+  // إضافة الصوت الجديد فقط إذا رفعه المستخدم
+  if (oggBytes) {
+    zip.file("GameStation_thm_ps2/sound/bgm.ogg", oggBytes);
   }
 
   const zipBytes = await zip.generateAsync({
     type: "nodebuffer",
     compression: "STORE",
-  });
-
-  return { zipBytes, previewJpgBytes: jpgBytes };
-}
-
-/** توليد حزمة ZIP بكامل ملفات الثيم الأصلي مع استبدال الخلفية والصوت فقط */
-export async function buildThemeZip(jpgBytes: Buffer, oggBytes: Buffer): Promise<BuildResult> {
-  const baseZip = await import("node:fs").then(fs => fs.readFileSync(BASE_THEME_ZIP_PATH));
-  const baseZipObj = new JSZip();
-  await baseZipObj.loadAsync(baseZip);
-
-  const zip = new JSZip();
-
-  for (const [relPath, file] of Object.entries(baseZipObj.files) as [string, JSZip.JSZipObject][]) {
-    if (file.dir) {
-      zip.folder(relPath);
-      continue;
-    }
-    // استبدال الخلفية والصوت فقط — كل الملفات الأخرى تبقى كما هي من الثيم الأصلي
-    if (relPath === "background.jpg") {
-      zip.file(relPath, jpgBytes);
-    } else if (relPath === "sound/bgm.ogg") {
-      zip.file(relPath, oggBytes);
-    } else {
-      const content = await file.async("nodebuffer");
-      zip.file(relPath, content);
-    }
-  }
-
-  const zipBytes = await zip.generateAsync({
-    type: "nodebuffer",
-    compression: "STORE", // ضغط صفر كما في الثيم الأصلي لسرعة النقل والقراءة
   });
 
   return { zipBytes, previewJpgBytes: jpgBytes };
