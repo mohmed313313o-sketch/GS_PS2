@@ -1,0 +1,408 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --primary: var(--color-blue-700);
+  --primary-foreground: var(--color-blue-50);
+  --sidebar-primary: var(--color-blue-600);
+  --sidebar-primary-foreground: var(--color-blue-50);
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+  --radius: 0.65rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.235 0.015 65);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.235 0.015 65);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.235 0.015 65);
+  --secondary: oklch(0.98 0.001 286.375);
+  --secondary-foreground: oklch(0.4 0.015 65);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.141 0.005 285.823);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.623 0.214 259.815);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.235 0.015 65);
+  --sidebar-accent: oklch(0.967 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  --primary: oklch(0.62 0.24 27); /* أحمر GameStation */
+  --primary-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.62 0.24 27);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --background: oklch(0.145 0.025 285);
+  --foreground: oklch(0.93 0.005 285);
+  --card: oklch(0.2 0.03 285);
+  --card-foreground: oklch(0.93 0.005 285);
+  --popover: oklch(0.21 0.006 285.885);
+  --popover-foreground: oklch(0.85 0.005 65);
+  --secondary: oklch(0.27 0.03 285);
+  --secondary-foreground: oklch(0.85 0.005 285);
+  --muted: oklch(0.25 0.025 285);
+  --muted-foreground: oklch(0.68 0.01 285);
+  --accent: oklch(0.27 0.03 285);
+  --accent-foreground: oklch(0.93 0.005 285);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.488 0.243 264.376);
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.85 0.005 65);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground:  oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.488 0.243 264.376);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Cairo", "Tajawal", ui-sans-serif, system-ui, sans-serif;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  /* تدرج لمعان متحرك يمر عبر نص الرابط */
+@keyframes link-shimmer {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.15), inset 0 0 6px rgba(239, 68, 68, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.45), inset 0 0 10px rgba(239, 68, 68, 0.12);
+  }
+}
+@keyframes link-shimmer-blue {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.15), inset 0 0 6px rgba(59, 130, 246, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(59, 130, 246, 0.45), inset 0 0 10px rgba(59, 130, 246, 0.12);
+  }
+}
+.animate-link-shimmer {
+  animation: link-shimmer 2.6s ease-in-out infinite;
+}
+
+/* إطار ليزري متوهج يدور حول الفوتر */
+@keyframes laser-border {
+  0%,
+  100% {
+    border-color: rgba(239, 68, 68, 0.7);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.35), inset 0 0 10px rgba(239, 68, 68, 0.1);
+  }
+  33% {
+    border-color: rgba(251, 146, 60, 0.8);
+    box-shadow: 0 0 16px rgba(251, 146, 60, 0.5), inset 0 0 12px rgba(251, 146, 60, 0.15);
+  }
+  66% {
+    border-color: rgba(236, 72, 153, 0.8);
+    box-shadow: 0 0 16px rgba(236, 72, 153, 0.5), inset 0 0 12px rgba(236, 72, 153, 0.15);
+  }
+}
+.animate-laser-border {
+  animation: laser-border 3s ease-in-out infinite;
+}
+
+/* نبض نيون على اسم محمد رضا */
+@keyframes neon-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 6px rgba(248, 113, 113, 0.6), 0 0 14px rgba(239, 68, 68, 0.35);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(248, 113, 113, 0.9), 0 0 28px rgba(239, 68, 68, 0.7), 0 0 45px rgba(239, 68, 68, 0.35);
+  }
+}
+.animate-neon-pulse {
+  animation: neon-pulse 2.2s ease-in-out infinite;
+}
+.animate-link-shimmer-blue {
+  animation: link-shimmer-blue 2.6s ease-in-out infinite;
+  animation-delay: 0.6s;
+}
+
+/* تدفق تدرج ملون يتحرك عبر نص اسم القناة نفسه */
+.channel-name-flow {
+  background: linear-gradient(
+    90deg,
+    #f87171 0%,
+    #fde68a 25%,
+    #fca5a5 50%,
+    #fde68a 75%,
+    #f87171 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: name-flow-pan 2.8s linear infinite;
+}
+.channel-name-flow-blue {
+  background: linear-gradient(
+    90deg,
+    #60a5fa 0%,
+    #bae6fd 25%,
+    #93c5fd 50%,
+    #bae6fd 75%,
+    #60a5fa 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: name-flow-pan 2.8s linear infinite;
+  animation-delay: 1.4s;
+}
+@keyframes name-flow-pan {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 18px rgba(225, 29, 44, 0.35), 0 0 40px rgba(225, 29, 44, 0.15); }
+    50% { box-shadow: 0 0 28px rgba(225, 29, 44, 0.55), 0 0 60px rgba(225, 29, 44, 0.25); }
+  }
+  @keyframes pulse-glow-blue {
+    0%, 100% { box-shadow: 0 0 18px rgba(34, 197, 94, 0.3), 0 0 40px rgba(34, 197, 94, 0.12); }
+    50% { box-shadow: 0 0 28px rgba(34, 197, 94, 0.5), 0 0 60px rgba(34, 197, 94, 0.22); }
+  }
+  @keyframes aurora-shift {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes shimmer-border {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @keyframes eq-bar {
+    0%, 100% { height: 6px; }
+    50% { height: 22px; }
+  }
+  @keyframes tilt {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  @keyframes shine-sweep {
+    0% { left: -60%; }
+    100% { left: 140%; }
+  }
+  .eq-bar {
+    animation: eq-bar 1.1s ease-in-out infinite;
+  }
+  .scan-grid {
+    opacity: 0.5;
+    transition: opacity 300ms;
+  }
+  .group:hover .scan-grid {
+    opacity: 1;
+  }
+  @keyframes scan-move {
+    0% { transform: translateY(-100%); opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { transform: translateY(340px); opacity: 0; }
+  }
+  .scan-line {
+    position: absolute;
+    background: linear-gradient(to bottom, transparent, rgba(225, 29, 44, 0.45), transparent);
+  }
+  .scan-line-v {
+    width: 1px;
+    height: 70px;
+    animation: scan-move 2.4s linear infinite;
+  }
+  .scan-line-h {
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.25), transparent);
+    animation: scan-move 2.4s linear infinite;
+  }
+  .animate-spin-slow {
+    animation: spin-slow 6s linear infinite;
+  }
+  .animate-spin-reverse {
+    animation: spin-reverse 8s linear infinite;
+  }
+  .animate-fade-up {
+    animation: fade-up 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 2.4s ease-in-out infinite;
+  }
+  .animate-pulse-glow-blue {
+    animation: pulse-glow-blue 2.4s ease-in-out infinite;
+  }
+  .animate-aurora {
+    animation: aurora-shift 7s ease-in-out infinite;
+  }
+  .animate-float {
+    animation: float-slow 5s ease-in-out infinite;
+  }
+  .stagger-1 { animation-delay: 0.08s; }
+  .stagger-2 { animation-delay: 0.18s; }
+  .stagger-3 { animation-delay: 0.28s; }
+  .stagger-4 { animation-delay: 0.38s; }
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition:
+      opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+      transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .reveal.appear {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-spin-slow,
+    .animate-spin-reverse,
+    .animate-fade-up,
+    .animate-pulse-glow,
+    .animate-pulse-glow-blue,
+    .animate-aurora,
+    .animate-float {
+      animation: none;
+    }
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  /**
+   * Custom container utility that centers content and adds responsive padding.
+   *
+   * This overrides Tailwind's default container behavior to:
+   * - Auto-center content (mx-auto)
+   * - Add responsive horizontal padding
+   * - Set max-width for large screens
+   *
+   * Usage: <div className="container">...</div>
+   *
+   * For custom widths, use max-w-* utilities directly:
+   * <div className="max-w-6xl mx-auto px-4">...</div>
+   */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* 16px - mobile padding */
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem; /* 32px - desktop padding */
+      padding-right: 2rem;
+      max-width: 1280px; /* Standard content width */
+    }
+  }
+}
