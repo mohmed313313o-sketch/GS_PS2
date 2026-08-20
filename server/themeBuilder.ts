@@ -17,7 +17,58 @@ export const THEME_BG_HEIGHT = 336;
 export const THEME_FOLDER_NAME = "GameStation_thm_ps2";
 
 /** مسارات أصول الثيم المرجعية */
-const BASE_THEME_ZIP_PATH = "/home/ubuntu/webdev-static-assets/GameStation_thm_ps2_base.zip";
+const BASE_THEME_ZIP_PATH = require("path").resolve(process.cwd(), "assets", "GameStation_thm_ps2.zip");
+
+/** شعار GameStation للعلامة المائية: يسار الأسفل (GS أبيض) ويمين الأسفل (شعار GameStation الأصلي) */
+const GS_WATERMARK_LOGO_PATH = require("path").resolve(process.cwd(), "assets", "gs-watermark-white.png");
+const GSTATION_WATERMARK_LOGO_PATH = require("path").resolve(process.cwd(), "assets", "gs-logo.png");
+
+/** نسبة عرض العلامة المائية من عرض الخلفية النهائية (صغيرة كما طلب المستخدم ~10%) */
+const WATERMARK_WIDTH_RATIO = 0.10;
+
+/** حد أقصى لارتفاع الخلفية ليُستخدم للشعار الأصلي عالي الدقة قبل التصغير */
+const LOGO_SCALE_UP_LIMIT = 1600;
+
+/** قصّ منطقة اللوجو غير الشفافة من PNG الأصلي (يمتد 1920x1920 بكامل مساحة PNG) */
+function trimLogoBoundingBox(alpha: Buffer, w: number, h: number): { x: number; y: number; bw: number; bh: number } {
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (alpha[(y * w + x) * 4 + 3] > 16) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < minX) return { x: 0, y: 0, bw: w, bh: h };
+  return { x: minX, y: minY, bw: maxX - minX + 1, bh: maxY - minY + 1 };
+}
+
+const watermarkReady = new Set<string>();
+
+/** جهّز نسخة PNG عالية الدقة من الشعار للاستخدام كعلامة مائية (تدعم عدة شعارات) */
+async function prepareWatermarkLogo(logoPath: string = GS_WATERMARK_LOGO_PATH, outName: string = "gs-watermark-hd"): Promise<string> {
+  if (watermarkReady.has(logoPath)) return `/tmp/${outName}.png`;
+  const fs = await import("node:fs/promises");
+  const sharp = await import("sharp");
+  const src = await sharp.default(logoPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  // قصّ المنطقة غير الشفافة ثم رفع الدقة للحفظ عند التصغير
+  const box = trimLogoBoundingBox(src.data as unknown as Buffer, src.info.width, src.info.height);
+  const scale = LOGO_SCALE_UP_LIMIT / Math.max(box.bw, box.bh);
+  const out = await sharp.default(src.data as unknown as Buffer, {
+    raw: { width: src.info.width, height: src.info.height, channels: 4 },
+  })
+    .extract({ left: box.x, top: box.y, width: box.bw, height: box.bh })
+    .resize({ width: Math.round(box.bw * scale), height: Math.round(box.bh * scale), fit: "inside" })
+    .png()
+    .toBuffer();
+  const tmp = `/tmp/${outName}.png`;
+  await fs.writeFile(tmp, out);
+  watermarkReady.add(logoPath);
+  return tmp;
+}
 
 /** لا يوجد حد أقصى لحجم الملفات المرفوعة */
 export const MAX_FILE_SIZE = Infinity;
@@ -35,10 +86,18 @@ export async function convertImageToBackground(imageBytes: Buffer): Promise<{ jp
   const tmpOut = `${tmpIn}.jpg`;
   await import("node:fs").then(fs => fs.writeFileSync(tmpIn, imageBytes));
   try {
+    const logoLeft = await prepareWatermarkLogo(GS_WATERMARK_LOGO_PATH, "wm-gs-left");
+    const logoRight = await prepareWatermarkLogo(GSTATION_WATERMARK_LOGO_PATH, "wm-gstation-right");
+    // علامتان مائيتان صغيرتان (~10% من عرض الخلفية): GS يسار الأسفل وGameStation يمين الأسفل
+    const wmW = Math.round(THEME_BG_WIDTH * WATERMARK_WIDTH_RATIO);
     await execFileAsync("ffmpeg", [
       "-y",
       "-i", tmpIn,
-      "-vf", `scale=${THEME_BG_WIDTH}:${THEME_BG_HEIGHT}:force_original_aspect_ratio=increase,crop=${THEME_BG_WIDTH}:${THEME_BG_HEIGHT}`,
+      "-i", logoLeft,
+      "-i", logoRight,
+      "-filter_complex",
+      `[0:v]scale=${THEME_BG_WIDTH}:${THEME_BG_HEIGHT}:force_original_aspect_ratio=increase,crop=${THEME_BG_WIDTH}:${THEME_BG_HEIGHT}[bg];[1:v]scale=${wmW}:-1[wm1];[2:v]scale=${wmW}:-1[wm2];[bg][wm1]overlay=14:${THEME_BG_HEIGHT}-14-h[v1];[v1][wm2]overlay=${THEME_BG_WIDTH}-14-w:${THEME_BG_HEIGHT}-14-h[out]`,
+      "-map", "[out]",
       "-q:v", "2",
       "-pix_fmt", "yuvj420p",
       tmpOut,
