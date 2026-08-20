@@ -17,11 +17,11 @@ export const THEME_BG_HEIGHT = 336;
 export const THEME_FOLDER_NAME = "GameStation_thm_ps2";
 
 /** مسارات أصول الثيم المرجعية */
-const BASE_THEME_ZIP_PATH = require("path").resolve(process.cwd(), "assets", "GameStation_thm_ps2.zip");
+const BASE_THEME_ZIP_PATH = "/home/ubuntu/webdev-static-assets/GameStation_thm_ps2_base.zip";
 
 /** شعار GameStation للعلامة المائية: يسار الأسفل (GS أبيض) ويمين الأسفل (شعار GameStation الأصلي) */
-const GS_WATERMARK_LOGO_PATH = require("path").resolve(process.cwd(), "assets", "gs-watermark-white.png");
-const GSTATION_WATERMARK_LOGO_PATH = require("path").resolve(process.cwd(), "assets", "gs-logo.png");
+const GS_WATERMARK_LOGO_PATH = "/home/ubuntu/webdev-static-assets/gs-watermark-white.png";
+const GSTATION_WATERMARK_LOGO_PATH = "/home/ubuntu/webdev-static-assets/gs-logo.png";
 
 /** نسبة عرض العلامة المائية من عرض الخلفية النهائية (صغيرة كما طلب المستخدم ~10%) */
 const WATERMARK_WIDTH_RATIO = 0.10;
@@ -150,6 +150,9 @@ export async function buildThemeZipImageOnly(jpgBytes: Buffer): Promise<BuildRes
     }
     if (relPath === "background.jpg") {
       zip.file(relPath, jpgBytes);
+    } else if (relPath === "sound/bgm.ogg") {
+      // المستخدم لم يرفع صوتاً: نحذف ملف الصوت الأصلي من الحزمة
+      continue;
     } else {
       const content = await file.async("nodebuffer");
       zip.file(relPath, content);
